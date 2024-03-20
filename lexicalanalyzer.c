@@ -65,6 +65,8 @@ void getNonBlank(FILE* input_file, char* next_char) {
   }
 }
 
+
+// The function lex() runs the state diagram to update the content of lexeme and nextToken according to the char class.
 enum Token lex(FILE* input_file, char* lexeme) {
   char next_char;
   getChar(input_file, &next_char);
@@ -82,7 +84,9 @@ enum Token lex(FILE* input_file, char* lexeme) {
 
 //runs the program file
 int main() {
+  //gets the inputed file
   FILE* input_file = fopen("input.txt", "r");
+  
   if (input_file == NULL) {
     printf("Error opening file\n");
     return 1;
