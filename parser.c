@@ -142,5 +142,3 @@ struct Node* createNode(enum Symbol symbol) {
   node->right = NULL;
   return node;
 }
-
-//
