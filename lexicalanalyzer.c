@@ -86,7 +86,7 @@ enum Token lex(FILE* input_file, char* lexeme) {
 int main() {
   //gets the inputed file
   FILE* input_file = fopen("input.txt", "r");
-  
+
   if (input_file == NULL) {
     printf("Error opening file\n");
     return 1;
