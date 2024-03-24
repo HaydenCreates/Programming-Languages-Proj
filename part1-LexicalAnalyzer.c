@@ -5,14 +5,14 @@ identifier, integer literal, left parenthesis, right parenthsis, additive operat
 //the packages needed
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
 
-//Global Variables - check
+//Variables
 char lexeme [100] = " "; //an array of characters that indicate a basic unit in program
 char nextChar = ' ';
 int charClass = -1;// only refers to LETTER, DIGIT, or UNKNOWN for the tokens
 int nextToken = -1; // the type of token it is
 int lexLen = -1;
+FILE* input_file;
 
 //Defining constants - Character Classes
 #define LETTER 0
@@ -29,16 +29,39 @@ int lexLen = -1;
 #define MULT_OP 40
 #define DIV_OP 41
 
-//adds the char to end of lexeme - Check
+//declaration of user-defined functions, minimized parameter passing
+void addChar();
+void getChar();
+void getNonBlank();
+int lookup(char ch);
+int lex();
+
+//adds the char to end of lexeme
 void addChar() {
-    int len = strlen(lexeme);
-    lexeme[len] = nextChar;
-    lexeme[len+1] = '\0';
+    // Check if lexLen is within the bounds of the lexeme array
+    if (lexLen < sizeof(lexeme) - 1) {
+        //auto-incremented the length of the lexeme
+        lexeme[lexLen++] = nextChar;
+        lexeme[lexLen] = '\0';  // indicates new lexeme
+    } else {
+        // Handle potential overflow (lexeme is full)
+        printf("Error: Lexeme array overflow\n");
+    }
 }
 
 // gets a char from the input file, saves it to nextChar, and decides the charClass - use the isDigit, isAlpha?
 void getChar(){
-
+    if (nextChar = getc(input_file) != EOF) {
+        if(isalpha(nextChar)){
+            charClass = LETTER;
+        }else if (isdigit(nextChar)){
+            charClass = DIGIT;
+        }else{
+            charClass = UNKNOWN;
+        }
+    } else {
+        nextChar = EOF;
+    }
 }
 
 //A function used to skip blank space
@@ -74,20 +97,22 @@ int lookup(char ch){
             break;
 
         case '/':
-            nextToken = LEFT_PAREN;
+            nextToken = DIV_OP;
             break;
         default:
             nextToken = UNKNOWN; // unrecognized character error - CHECK
             printf("Error: unrecognized character '%c'\n", ch);
             break;
+
     }
 
     return nextToken;
 }
 
+// runs the state diagram to update the content of lexeme and nextToken
 int lex(){
 
-    //what do I do with this?
+    //intializes new lexeme by setting it to 0
     lexLen = 0;
 
     //skip white spaces
@@ -99,8 +124,8 @@ int lex(){
             addChar();
             getChar();
 
-            //continues since it can be an identifier with letters and numbers
-            while(charClass == LETTER || charClass == DIGIT){
+            //continues to go while it's considered an ID
+            while (charClass == LETTER || charClass == DIGIT) {
                 addChar();
                 getChar();
             }
@@ -132,6 +157,7 @@ int lex(){
             lexeme[2] = 'F';
             lexeme[3] = '\0';
             break;
+
         default:
             nextToken = -3; // invalid character error
             printf("Error: invalid character class '%d'\n", charClass);
@@ -139,4 +165,28 @@ int lex(){
     }
 
     return nextToken;
+}
+
+
+//executes the start of code logic
+int main(){
+    //gets the inputed file
+    input_file = fopen("input.txt", "r");
+
+    //checks if the file given is valid/not null
+    if (input_file == NULL) {
+        printf("Error opening file\n");
+        return 1;
+    }
+
+    while (nextToken != EOF) {
+        lex();
+        if (nextToken != EOF) {
+            printf("Next token is: %-2d, Next lexeme is '%s'\n", nextToken, lexeme);
+        }
+    }
+
+    fclose(input_file);
+    return 0;
+
 }
