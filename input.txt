@@ -1,11 +1,2 @@
-a = b; // This should identify "a", "=", "b", and ";" as IDENTIFIER, ASSIGN_OP, IDENTIFIER, and PUNCTUATION tokens respectively
-100 + 20 * 3  // This should identify "100", "+", "20", "*", "3" as INTEGER_LITERAL, ADD_OP, INTEGER_LITERAL, MUL_OP, and INTEGER_LITERAL tokens
-if (x > 0) { // This should identify "if", "(", "x", ">", "0", ")", and "{", "}" as KEYWORD, LPAREN, IDENTIFIER, REL_OP, INTEGER_LITERAL, RPAREN, and PUNCTUATION tokens (assuming curly braces for code block)
-x1y2 // This should identify "x1y2" as a single IDENTIFIER (assuming identifiers can contain alphanumeric characters)
-_variable  // This should identify "_variable" as a single IDENTIFIER (assuming identifiers can start with underscore)
-"hello world"  // This should identify "hello world" as a single STRING_LITERAL (if your lexer supports strings)
-123abc  // This should identify "123" as INTEGER_LITERAL and "abc" as an error (or UNKNOWN token)
-a = (b + c) * d  // This should identify all tokens correctly, including parentheses
-x = y && z || !w  // This should identify tokens for logical operators (assuming your lexer supports them)
-123.45 // This should identify an error (or UNKNOWN token) if your lexer doesn't support floating-point literals
-// This should identify an error (or UNKNOWN token) for any unexpected characters like @ or $
+a + b;
+

@@ -5,12 +5,13 @@ identifier, integer literal, left parenthesis, right parenthsis, additive operat
 //the packages needed
 #include <stdio.h>
 #include <ctype.h>
+#include <direct.h>
 
 //Variables
 char lexeme [100] = " "; //an array of characters that indicate a basic unit in program
 char nextChar = ' ';
 int charClass = -1;// only refers to LETTER, DIGIT, or UNKNOWN for the tokens
-int nextToken = -1; // the type of token it is
+int nextToken = 0; // the type of token it is, need to change back to -1?
 int lexLen = -1;
 FILE* input_file;
 
@@ -40,6 +41,7 @@ int lex();
 void addChar() {
     // Check if lexLen is within the bounds of the lexeme array
     if (lexLen < sizeof(lexeme) - 1) {
+        printf("adding new Char");
         //auto-incremented the length of the lexeme
         lexeme[lexLen++] = nextChar;
         lexeme[lexLen] = '\0';  // indicates new lexeme
@@ -51,22 +53,32 @@ void addChar() {
 
 // gets a char from the input file, saves it to nextChar, and decides the charClass - use the isDigit, isAlpha?
 void getChar(){
-    if (nextChar = getc(input_file) != EOF) {
+    //gets the first char
+    nextChar = getc(input_file);
+    printf("getChar char: %d \n",nextChar);
+    if (nextChar != EOF) {
         if(isalpha(nextChar)){
             charClass = LETTER;
+            printf("Letter char \n");
         }else if (isdigit(nextChar)){
             charClass = DIGIT;
+            printf("Digit char");
         }else{
             charClass = UNKNOWN;
+            printf("Unkown char");
         }
+
+        printf("Charclass: %d \n", charClass);
     } else {
-        nextChar = EOF;
+
+        //don't use nextChar?
+        charClass = EOF;
     }
 }
 
 //A function used to skip blank space
 void getNonBlank() {
-    while (nextChar != NULL && isspace(nextChar))
+    while (nextChar != ' ' && isspace(nextChar))
         getChar();
 }
 
@@ -74,6 +86,8 @@ void getNonBlank() {
 //based on the parameter char using a switch statement.
 int lookup(char ch){
     addChar();
+
+    printf("lookup");
 
     switch(ch){
         case '(':
@@ -101,7 +115,7 @@ int lookup(char ch){
             break;
         default:
             nextToken = UNKNOWN; // unrecognized character error - CHECK
-            printf("Error: unrecognized character '%c'\n", ch);
+            printf("Error: unrecognized character '%d'\n", ch);
             break;
 
     }
@@ -117,6 +131,8 @@ int lex(){
 
     //skip white spaces
     getNonBlank();
+
+    printf("lex");
 
     switch (charClass){
 
@@ -169,9 +185,13 @@ int lex(){
 
 
 //executes the start of code logic
-int main(){
-    //gets the inputed file
-    input_file = fopen("input.txt", "r");
+int main(int argc, char *argv[]){
+
+    //in the wrong place
+    printf("%s\n", getcwd(NULL, 0));
+
+    //gets the inputed file - might need to fix this to work on any
+    input_file = fopen("C:\\Users\\emmas\\Desktop\\Programming Languages Proj\\input.txt", "r");
 
     //checks if the file given is valid/not null
     if (input_file == NULL) {
@@ -179,11 +199,21 @@ int main(){
         return 1;
     }
 
+    getChar();
+    printf("Next token is: %-2d", nextToken);
+
     while (nextToken != EOF) {
         lex();
         if (nextToken != EOF) {
             printf("Next token is: %-2d, Next lexeme is '%s'\n", nextToken, lexeme);
         }
+    }
+
+    int size = sizeof(lexeme) / sizeof(lexeme[0]); // Get array size (excluding null terminator)
+
+    //E O F is the output - is that supposed to be it?, should I put this somewhere else to debug?
+    for (int i = 0; i < size - 1; i++) { // Loop through each character (excluding null terminator)
+        printf("%c ", lexeme[i]);
     }
 
     fclose(input_file);
