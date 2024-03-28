@@ -30,6 +30,10 @@ FILE* input_file;
 #define MULT_OP 40
 #define DIV_OP 41
 
+//extra - just in case
+#define SEMI_COLON 50
+#define EQUAL_OP 51
+
 //declaration of user-defined functions, minimized parameter passing
 void addChar();
 void getChar();
@@ -41,7 +45,6 @@ int lex();
 void addChar() {
     // Check if lexLen is within the bounds of the lexeme array
     if (lexLen < sizeof(lexeme) - 1) {
-        printf("adding new Char");
         //auto-incremented the length of the lexeme
         lexeme[lexLen++] = nextChar;
         lexeme[lexLen] = '\0';  // indicates new lexeme
@@ -51,24 +54,19 @@ void addChar() {
     }
 }
 
-// gets a char from the input file, saves it to nextChar, and decides the charClass - use the isDigit, isAlpha?
+// gets a char from the input file, saves it to nextChar, and decides the charClass
 void getChar(){
     //gets the first char
     nextChar = getc(input_file);
-    printf("getChar char: %d \n",nextChar);
+
     if (nextChar != EOF) {
         if(isalpha(nextChar)){
             charClass = LETTER;
-            printf("Letter char \n");
         }else if (isdigit(nextChar)){
             charClass = DIGIT;
-            printf("Digit char");
         }else{
             charClass = UNKNOWN;
-            printf("Unkown char");
         }
-
-        printf("Charclass: %d \n", charClass);
     } else {
 
         //don't use nextChar?
@@ -78,7 +76,7 @@ void getChar(){
 
 //A function used to skip blank space
 void getNonBlank() {
-    while (nextChar != ' ' && isspace(nextChar))
+    while (nextChar != NULL && isspace(nextChar))
         getChar();
 }
 
@@ -86,8 +84,6 @@ void getNonBlank() {
 //based on the parameter char using a switch statement.
 int lookup(char ch){
     addChar();
-
-    printf("lookup");
 
     switch(ch){
         case '(':
@@ -113,6 +109,12 @@ int lookup(char ch){
         case '/':
             nextToken = DIV_OP;
             break;
+        case '=':
+            nextToken = EQUAL_OP;
+            break;
+        case ';':
+            nextToken = SEMI_COLON;
+            break;
         default:
             nextToken = UNKNOWN; // unrecognized character error - CHECK
             printf("Error: unrecognized character '%d'\n", ch);
@@ -131,8 +133,6 @@ int lex(){
 
     //skip white spaces
     getNonBlank();
-
-    printf("lex");
 
     switch (charClass){
 
@@ -200,20 +200,13 @@ int main(int argc, char *argv[]){
     }
 
     getChar();
-    printf("Next token is: %-2d", nextToken);
+    printf("Next token is: %-2d \n", nextToken);
 
     while (nextToken != EOF) {
         lex();
         if (nextToken != EOF) {
             printf("Next token is: %-2d, Next lexeme is '%s'\n", nextToken, lexeme);
         }
-    }
-
-    int size = sizeof(lexeme) / sizeof(lexeme[0]); // Get array size (excluding null terminator)
-
-    //E O F is the output - is that supposed to be it?, should I put this somewhere else to debug?
-    for (int i = 0; i < size - 1; i++) { // Loop through each character (excluding null terminator)
-        printf("%c ", lexeme[i]);
     }
 
     fclose(input_file);
