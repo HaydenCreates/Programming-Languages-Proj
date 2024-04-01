@@ -1,1 +1,1 @@
-(alaph1 + beta2);
+sum = 10 + anotherNum;

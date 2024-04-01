@@ -1,25 +1,17 @@
-/*
- * This lexical analyzer recognizes the following tokens:
- *
- * Identifiers:       Sequences of letters and digits, starting with a letter.
- * Integer literals:  Sequences of digits.
- * Additive operators: '+' and '-'.
- * Multiplicative operators: '*' and '/'.
- * Parentheses:       '(' and ')'.
- * Semicolon:         ';' (extra rule, not initially required).
- * Equal operator:    '=' (extra rule, not initially required).
- *
- * Other characters are considered errors.
-*/
-
-//the packages needed
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
-#include <direct.h>
+
+char *input;
+char token;
+
+void factor();
+void term();
+void expr();
 
 //Variables
 char lexeme [100] = " "; //an array of characters that indicate a basic unit in program
-char nextChar = ' '; //a char that reads from the input
+char nextChar = ' ';
 int charClass = -1; // Checks if it can classify it as letter, digit, or other.
                     //only refers to LETTER, DIGIT, or UNKNOWN for the tokens
 int nextToken = 0; // the classification of the lexeme
@@ -31,17 +23,19 @@ FILE* input_file; //the input file
 #define DIGIT 1
 #define UNKNOWN 99
 
-// Token codes as constants; the number coresponding with the variable
-#define ID 10 //Sequences of letters and digits, starting with a letter (e.g., x, name123)
-#define INT_LIT 11 // Sequences of digits (e.g., 10, 456)
-#define LEFT_PAREN 20 //Left '(' parenthesis.
-#define RIGHT_PAREN 21 // Right ')' parenthesis.
-#define ADD_OP 30 //Plus (+) symbol.
-#define SUB_OP 31 //Minus (-) symbol.
-#define MULT_OP 40 //Multiplication (*) symbol
-#define DIV_OP 41 //Division (/) symbol.
-#define SEMI_COLON 50 // Semicolon (;) symbol
-#define EQUAL_OP 51 // Equal (=) symbol
+// Token codes - constants
+#define ID 10
+#define INT_LIT 11
+#define LEFT_PAREN 20
+#define RIGHT_PAREN 21
+#define ADD_OP 30
+#define SUB_OP 31
+#define MULT_OP 40
+#define DIV_OP 41
+
+//extra - just in case
+#define SEMI_COLON 50
+#define EQUAL_OP 51
 
 //declaration of user-defined functions, minimized parameter passing
 void addChar();
@@ -50,7 +44,7 @@ void getNonBlank();
 int lookup(char ch);
 int lex();
 
-// Adds the next character to the lexeme, handling potential overflow.
+//adds the char to end of lexeme
 void addChar() {
 
     // Check if lexLen is within the bounds of the lexeme array
@@ -65,7 +59,7 @@ void addChar() {
     }
 }
 
-// Reads the next character from the input file and determines its character class.
+// gets a char from the input file, saves it to nextChar, and decides the charClass
 void getChar(){
 
     //gets the first char
@@ -88,13 +82,14 @@ void getChar(){
     }
 }
 
-// Skips whitespace characters.
+//A function used to skip blank space
 void getNonBlank() {
     while (nextChar != NULL && isspace(nextChar)) // if its null or space, skip it
         getChar();
 }
 
-// Identifies tokens that are single characters and updates nextToken.
+//The function first calls addChar(), and then decide nextToken
+//based on the parameter char using a switch statement.
 int lookup(char ch){
     //add the char to the lexeme
     addChar();
@@ -140,7 +135,7 @@ int lookup(char ch){
     return nextToken;
 }
 
-// Implements the lexical analyzer state machine, updating lexeme and nextToken based on the character class.
+// runs the state diagram to update the content of lexeme and nextToken
 int lex(){
 
     //intializes new lexeme by setting it to 0
@@ -150,7 +145,7 @@ int lex(){
     getNonBlank();
 
     //if the charClass has already identified the lexeme, then add it,
-    //otherwise, use the lookup to identify it, or end the function
+    //otherwise, use the lookup to identify it
     switch (charClass){
 
         case LETTER:
@@ -201,32 +196,66 @@ int lex(){
 }
 
 
-// Opens the input file, calls `lex()` repeatedly until EOF is reached, and prints each token and lexeme.
-int main(int argc, char *argv[]){
+void error() {
+    fprintf(stderr, "Error in parsing.\n");
+    exit(1);
+}
 
-    //gets the inputed file - might need to fix this to work on any
-    input_file = fopen("C:\\Users\\emmas\\Desktop\\Programming Languages Proj\\input.txt", "r");
+void match(char expectedToken) {
+    if (token == expectedToken)
+        token = *input;
+    else
+        error();
+}
 
-    //checks if the file given is valid/not null
-    if (input_file == NULL) {
-        printf("Error opening file\n");
-        return 1;
+void id() {
+    printf("[%c]", token);
+    match(token);
+}
+
+void factor() {
+    if (isalpha(token))
+        id();
+    else if (token == '(') {
+        match('(');
+        expr();
+        match(')');
+    } else
+        error();
+}
+
+void term() {
+    factor();
+    while (token == '*' || token == '/') {
+        printf("[%c] ", token);
+        match(token);
+        factor();
     }
+}
 
-    //gets the first char
-    getChar();
-    printf("Next token is: %-2d \n", nextToken); //need the name to be shown, not the number??
-
-
-    while (nextToken != EOF) {
+void expr() {
+    printf("[expr\n");
+    term();
+    while (nextToken == ADD_OP || nextToken == SUB_OP) {
+        printf("[%c]\n", nextChar);
         lex();
-        if (nextToken != EOF) {
-            printf("Next token is: %-2d, Next lexeme is '%s'\n", nextToken, lexeme);
-        }
+        term();
+    }
+    printf("]\n");
+}
+
+int main() {
+    input = malloc(100 * sizeof(char));
+    printf("statement: ");
+
+    scanf("%s", input);
+
+    lex();
+    expr();
+    if (nextToken != EOF) {
+        printf("Error: unexpected token '%s'\n", lexeme);
     }
 
-    //close file
-    fclose(input_file);
+    fclose(input);
     return 0;
-
 }
