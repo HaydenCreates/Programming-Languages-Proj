@@ -15,7 +15,6 @@
 //the packages needed
 #include <stdio.h>
 #include <ctype.h>
-#include <direct.h>
 
 //Variables
 char lexeme [100] = " "; //an array of characters that indicate a basic unit in program
@@ -205,7 +204,7 @@ int lex(){
 int main(int argc, char *argv[]){
 
     //gets the inputed file - might need to fix this to work on any
-    input_file = fopen("C:\\Users\\emmas\\Desktop\\Programming Languages Proj\\input.txt", "r");
+    input_file = fopen("input.txt", "r");
 
     //checks if the file given is valid/not null
     if (input_file == NULL) {
@@ -215,9 +214,8 @@ int main(int argc, char *argv[]){
 
     //gets the first char
     getChar();
-    printf("Next token is: %-2d \n", nextToken); //need the name to be shown, not the number??
 
-
+    //while the file hasn't ended, keep getting the avaliable tokens
     while (nextToken != EOF) {
         lex();
         if (nextToken != EOF) {
