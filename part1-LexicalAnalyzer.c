@@ -98,7 +98,8 @@ int lookup(char ch){
     //add the char to the lexeme
     addChar();
 
-    //find what token the char is
+    //Implements grammar rule for other lexemes:
+    // -finds the token if it's not considered an identifer
     switch(ch){
         case '(':
             nextToken = LEFT_PAREN;
@@ -130,7 +131,7 @@ int lookup(char ch){
             nextToken = SEMI_COLON;
             break;
         default:
-            nextToken = UNKNOWN; // unrecognized character error - CHECK
+            nextToken = UNKNOWN; // unrecognized character error
             printf("Error: unrecognized character '%d'\n", ch);
             break;
 
@@ -152,6 +153,9 @@ int lex(){
     //otherwise, use the lookup to identify it, or end the function
     switch (charClass){
 
+        // Implements the grammar rule for identifiers:
+        // - Must start with a letter
+        // - Can be followed by letters or digits
         case LETTER:
             addChar();
             getChar();
