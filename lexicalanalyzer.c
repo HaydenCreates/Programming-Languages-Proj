@@ -18,20 +18,23 @@ enum Token {
 };
 
 
-//gets the
+// Function to get the next character from the input file
 void getChar(FILE* input_file, char* next_char) {
   *next_char = fgetc(input_file);
 }
 
+// Function to add a character to the lexeme
 void addChar(char* lexeme, char next_char) {
   if (strlen(lexeme) < MAX_LEXEME_LENGTH - 1) {
     lexeme[strlen(lexeme)] = next_char;
-    lexeme[strlen(lexeme)] = '\0';
+    lexeme[strlen(lexeme)] = '\0';  // Null-terminate the string
   } else {
     printf("Error: Lexeme too long\n");
   }
 }
 
+
+// Function to lookup the type of token based on the next character
 enum Token lookup(char next_char, char* lexeme) {
   addChar(lexeme, next_char);
   switch (next_char) {
@@ -59,6 +62,7 @@ enum Token lookup(char next_char, char* lexeme) {
 }
 
 //finds if the next character is a blank
+//skip blank spaces in the input file
 void getNonBlank(FILE* input_file, char* next_char) {
   while (next_char != NULL && isspace(*next_char)) {
     getChar(input_file, next_char);
@@ -66,7 +70,7 @@ void getNonBlank(FILE* input_file, char* next_char) {
 }
 
 
-// The function lex() runs the state diagram to update the content of lexeme and nextToken according to the char class.
+//runs the state diagram to update the content of lexeme and nextToken according to the char class
 enum Token lex(FILE* input_file, char* lexeme) {
   char next_char;
   getChar(input_file, &next_char);
@@ -87,6 +91,8 @@ int main() {
   //gets the inputed file
   FILE* input_file = fopen("input.txt", "r");
 
+  
+  //Check if the file was opened successfully
   if (input_file == NULL) {
     printf("Error opening file\n");
     return 1;
@@ -95,7 +101,9 @@ int main() {
   char lexeme[MAX_LEXEME_LENGTH] = "";
   enum Token token;
 
+  //loop through the file until all tokens are processed
   while ((token = lex(input_file, lexeme)) != UNKNOWN) {
+    //print the token based on its type
     switch (token) {
       case IDENTIFIER:
         printf("Identifier: %s\n", lexeme);
@@ -124,5 +132,5 @@ int main() {
       default:
         printf("Unknown token\n");
     }
-    lexeme[0] = '\0'; // Reset lexe
+    lexeme[0] = '\0'; // Reset lexeme
 }

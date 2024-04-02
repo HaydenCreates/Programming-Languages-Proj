@@ -10,7 +10,7 @@
  * Equal operator:    '=' (extra rule, not initially required).
  *
  * Other characters are considered errors.
-*/
+ */
 
 //the packages needed
 #include <stdio.h>
@@ -178,57 +178,3 @@ int lex(){
                 getChar();
             }
 
-            nextToken = INT_LIT;
-            break;
-
-        case UNKNOWN:
-            lookup(nextChar);
-            getChar();
-            break;
-
-        case EOF:
-            nextToken = EOF;
-            lexeme[0] = 'E';
-            lexeme[1] = 'O';
-            lexeme[2] = 'F';
-            lexeme[3] = '\0';
-            break;
-
-        default:
-            nextToken = -3; // invalid character error
-            printf("Error: invalid character class '%d'\n", charClass);
-            break;
-    }
-
-    return nextToken;
-}
-
-
-// Opens the input file, calls `lex()` repeatedly until EOF is reached, and prints each token and lexeme.
-int main(int argc, char *argv[]){
-
-    //gets the inputed file - might need to fix this to work on any
-    input_file = fopen("input.txt", "r");
-
-    //checks if the file given is valid/not null
-    if (input_file == NULL) {
-        printf("Error opening file\n");
-        return 1;
-    }
-
-    //gets the first char
-    getChar();
-
-    //while the file hasn't ended, keep getting the avaliable tokens
-    while (nextToken != EOF) {
-        lex();
-        if (nextToken != EOF) {
-            printf("Next token is: %-2d, Next lexeme is '%s'\n", nextToken, lexeme);
-        }
-    }
-
-    //close file
-    fclose(input_file);
-    return 0;
-
-}

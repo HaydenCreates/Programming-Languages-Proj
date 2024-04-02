@@ -32,12 +32,15 @@ void factor();
 void getChar(); // Added getChar() function prototype
 
 // Utility functions
+
+// Adds the next character to the lexeme, handling potential overflow.
 void addChar() {
     int len = strlen(lexeme);
     lexeme[len] = nextChar;
     lexeme[len+1] = '\0';
 }
 
+// Reads the next character from the input file and determines its character class.
 void getChar() {
     nextChar = getc(input);
     if (feof(input)) {
@@ -51,11 +54,13 @@ void getChar() {
     }
 }
 
+// Skips whitespace characters.
 void getNonBlank() {
     while (isspace(nextChar))
         getChar();
 }
 
+// Identifies tokens that are single characters and updates nextToken.
 int lookup(char ch) {
     switch (ch) {
         case '(':
@@ -91,6 +96,7 @@ int lookup(char ch) {
     return nextToken;
 }
 
+// Implements the lexical analyzer state machine, updating lexeme and nextToken based on the character class.
 int lex() {
     memset(lexeme, 0, sizeof(lexeme));
     getNonBlank();
@@ -192,3 +198,4 @@ int main(int argc, char *argv[]) {
     fclose(input); // Close the input file
     return 0;
 }
+
