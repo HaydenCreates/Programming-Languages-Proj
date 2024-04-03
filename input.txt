@@ -1,1 +1,1 @@
-sum = 10 + anotherNum;
+A + (B * 100)

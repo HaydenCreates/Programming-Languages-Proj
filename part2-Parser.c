@@ -1,62 +1,102 @@
+/*
+This parser implements the following grammar rules:
+Expr → Term (+/- Term)
+expr() function: calls term(), checks for ADD_OP or SUB_OP, calls term() again for each occurrence.
+
+*Term → Factor (|/ Factor)
+term() function: calls factor(), checks for MULT_OP or DIV_OP, calls factor() again for each occurrence.
+
+Factor → id | intLit | ( Expr )
+factor() function: checks for ID, INT_LIT, LEFT_PAREN, handles each case accordingly.
+ID: calls lex() to get the variable name.
+INT_LIT: calls lex() to get the integer value.
+LEFT_PAREN: calls lex(), calls expr(), checks for RIGHT_PAREN, reports error if missing.
+
+id → letter (letter | digit)
+lex() function (part of factor handling): accumulates letters and digits into lexeme while charClass is LETTER or DIGIT.
+
+intLit → digit (digit)
+lex() function (part of factor handling): accumulates digits into lexeme while charClass is DIGIT.
+*/
+
+//packages
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
 // Global variables
-char lexeme[100] = "";
-char nextChar = ' ';
+char lexeme[100] = "";//an array of characters that indicate a basic unit in program
+char nextChar = ' '; //a char that reads from the input
 int nextToken = -1;
-int charClass = -1;
+int charClass = -1; // Checks if it can classify it as letter, digit, or other.
+                    //only refers to LETTER, DIGIT, or UNKNOWN for the tokens
 FILE *input; // File pointer for input
 
-// Character classes
+//Character Classes - constants
 #define LETTER 0
 #define DIGIT 1
 #define UNKNOWN 99
 
-// Token codes
-#define ID 10
-#define INT_LIT 11
-#define LEFT_PAREN 20
-#define RIGHT_PAREN 21
-#define ADD_OP 30
-#define SUB_OP 31
-#define MULT_OP 40
-#define DIV_OP 41
+// Token codes as constants; the number coresponding with the variable
+#define ID 10 //Sequences of letters and digits, starting with a letter (e.g., x, name123)
+#define INT_LIT 11 // Sequences of digits (e.g., 10, 456)
+#define LEFT_PAREN 20 //Left '(' parenthesis.
+#define RIGHT_PAREN 21 // Right ')' parenthesis.
+#define ADD_OP 30 //Plus (+) symbol.
+#define SUB_OP 31 //Minus (-) symbol.
+#define MULT_OP 40 //Multiplication (*) symbol
+#define DIV_OP 41 //Division (/) symbol.
 
-// Function prototypes
+//declaration of user-defined functions, minimized parameter passing
 void expr();
 void term();
 void factor();
-void getChar(); // Added getChar() function prototype
+void addChar();
+void getChar();
+void getNonBlank();
+int lookup(char ch);
+int lex();
 
-// Utility functions
+// Adds the next character to the lexeme, handling potential overflow.
 void addChar() {
     int len = strlen(lexeme);
     lexeme[len] = nextChar;
     lexeme[len+1] = '\0';
 }
 
+// Reads the next character from the input file and determines its character class.
 void getChar() {
     nextChar = getc(input);
-    if (feof(input)) {
-        charClass = EOF;
-    } else if (isalpha(nextChar)) {
-        charClass = LETTER;
-    } else if (isdigit(nextChar)) {
-        charClass = DIGIT;
+
+    //checks if it's the end-of-file
+    if (nextChar != EOF) {
+
+        //checks if it's a letter, digit, or other
+        if(isalpha(nextChar)){
+            charClass = LETTER;
+        }else if (isdigit(nextChar)){
+            charClass = DIGIT;
+        }else{
+            charClass = UNKNOWN;
+        }
     } else {
-        charClass = UNKNOWN;
+        //end of the file
+        charClass = EOF;
     }
 }
 
+//Skips whitespace characters.
 void getNonBlank() {
     while (isspace(nextChar))
         getChar();
 }
 
+// Identifies tokens that are single characters and updates nextToken.
 int lookup(char ch) {
+
+    //Implements grammar rule for other lexemes:
+    // -finds the token if it's not considered an identifer
     switch (ch) {
         case '(':
             addChar();
@@ -91,13 +131,25 @@ int lookup(char ch) {
     return nextToken;
 }
 
+// Implements the lexical analyzer state machine, updating lexeme and nextToken based on the character class.
 int lex() {
     memset(lexeme, 0, sizeof(lexeme));
+
+    //skip white spaces
     getNonBlank();
+
+    //if the charClass has already identified the lexeme, then add it,
+    //otherwise, use the lookup to identify it, or end the function
     switch (charClass) {
+
+        // Implements the grammar rule for identifiers:
+        // - Must start with a letter
+        // - Can be followed by letters or digits
         case LETTER:
             addChar();
             getChar();
+
+            //continues to go while it's considered an ID
             while (charClass == LETTER || charClass == DIGIT) {
                 addChar();
                 getChar();
@@ -107,6 +159,8 @@ int lex() {
         case DIGIT:
             addChar();
             getChar();
+
+            //continues until it isn't a digit anymore
             while (charClass == DIGIT) {
                 addChar();
                 getChar();
@@ -132,29 +186,56 @@ int lex() {
     return nextToken;
 }
 
-// Recursive descent parser functions
+// Handles the expression rule, calling term() for each operand and
+//checking for addition or subtraction operators in between.
 void expr() {
     printf("[expr\n");
     term();
     while (nextToken == ADD_OP || nextToken == SUB_OP) {
-        printf("[%c]\n", nextChar);
+        switch (nextToken) {
+            case ADD_OP:
+                printf("[+]\n");
+                break;
+            case SUB_OP:
+                printf("[-]\n");
+                break;
+            default:
+                printf("[Error: unrecognized operator]\n");
+                break;
+        }
         lex();
         term();
     }
     printf("]\n");
 }
 
+//Handles the term rule, calling factor() for each operand and
+//checking for multiplication or division operators in between.
 void term() {
     printf("[term\n");
     factor();
     while (nextToken == MULT_OP || nextToken == DIV_OP) {
-        printf("[%c]\n", nextChar);
+        switch (nextToken) {
+            case MULT_OP:
+                printf("[*]\n");
+                break;
+            case DIV_OP:
+                printf("[/]\n");
+                break;
+            default:
+                printf("[Error: unrecognized operator]\n");
+                break;
+        }
         lex();
         factor();
     }
     printf("]\n");
 }
 
+
+//Handles the factor rule, checking for identifiers,
+//integer literals, or parenthesized expressions. It calls lex() to
+//get the lexeme (variable name or integer value) when needed.
 void factor() {
     printf("[factor\n");
     if (nextToken == ID) {
@@ -179,9 +260,16 @@ void factor() {
     printf("]\n");
 }
 
+// Executes the parser code
 int main(int argc, char *argv[]) {
-    printf("Enter the expression: ");
-    input = stdin; // Initializing the input file pointer with stdin
+   //gets the inputed file
+    input = fopen("input.txt", "r");
+
+    //checks if the file given is valid/not null
+    if (input == NULL) {
+        printf("Error opening file\n");
+        return 1;
+    }
 
     lex();
     expr();
