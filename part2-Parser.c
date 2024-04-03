@@ -59,6 +59,11 @@ int lookup(char ch);
 int lex();
 
 // Adds the next character to the lexeme, handling potential overflow.
+void getChar(); // Added getChar() function prototype
+
+// Utility functions
+
+// Adds the next character to the lexeme, handling potential overflow.
 void addChar() {
     int len = strlen(lexeme);
     lexeme[len] = nextChar;
@@ -280,3 +285,4 @@ int main(int argc, char *argv[]) {
     fclose(input); // Close the input file
     return 0;
 }
+
