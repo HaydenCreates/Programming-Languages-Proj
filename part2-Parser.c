@@ -255,7 +255,7 @@ void factor() {
         lex();
         expr();
         if (nextToken == RIGHT_PAREN) {
-            printf(output, "[)]\n");
+            fprintf(output, "[)]\n");
             lex();
         } else {
             fprintf(output, "Error: missing closing parenthesis\n");
