@@ -32,6 +32,7 @@ int nextToken = -1;
 int charClass = -1; // Checks if it can classify it as letter, digit, or other.
                     //only refers to LETTER, DIGIT, or UNKNOWN for the tokens
 FILE *input; // File pointer for input
+FILE *output; //the output file
 
 //Character Classes - constants
 #define LETTER 0
@@ -130,7 +131,7 @@ int lookup(char ch) {
         default:
             addChar();
             nextToken = -2; // unrecognized character error
-            printf("Error: unrecognized character '%c'\n", ch);
+            fprintf(output, "Error: unrecognized character '%c'\n", ch);
             break;
     }
     return nextToken;
@@ -185,7 +186,7 @@ int lex() {
             break;
         default:
             nextToken = -3; // invalid character error
-            printf("Error: invalid character class '%d'\n", charClass);
+            fprintf(output, "Error: invalid character class '%d'\n", charClass);
             break;
     }
     return nextToken;
@@ -194,47 +195,47 @@ int lex() {
 // Handles the expression rule, calling term() for each operand and
 //checking for addition or subtraction operators in between.
 void expr() {
-    printf("[expr\n");
+    fprintf(output, "[expr\n");
     term();
     while (nextToken == ADD_OP || nextToken == SUB_OP) {
         switch (nextToken) {
             case ADD_OP:
-                printf("[+]\n");
+                fprintf(output, "[+]\n");
                 break;
             case SUB_OP:
-                printf("[-]\n");
+                fprintf(output, "[-]\n");
                 break;
             default:
-                printf("[Error: unrecognized operator]\n");
+                fprintf(output, "[Error: unrecognized operator]\n");
                 break;
         }
         lex();
         term();
     }
-    printf("]\n");
+    fprintf(output, "]\n");
 }
 
 //Handles the term rule, calling factor() for each operand and
 //checking for multiplication or division operators in between.
 void term() {
-    printf("[term\n");
+    fprintf(output, "[term\n");
     factor();
     while (nextToken == MULT_OP || nextToken == DIV_OP) {
         switch (nextToken) {
             case MULT_OP:
-                printf("[*]\n");
+                fprintf(output, "[*]\n");
                 break;
             case DIV_OP:
-                printf("[/]\n");
+                fprintf(output, "[/]\n");
                 break;
             default:
-                printf("[Error: unrecognized operator]\n");
+                fprintf(output, "[Error: unrecognized operator]\n");
                 break;
         }
         lex();
         factor();
     }
-    printf("]\n");
+    fprintf(output, "]\n");
 }
 
 
@@ -242,27 +243,27 @@ void term() {
 //integer literals, or parenthesized expressions. It calls lex() to
 //get the lexeme (variable name or integer value) when needed.
 void factor() {
-    printf("[factor\n");
+    fprintf(output, "[factor\n");
     if (nextToken == ID) {
-        printf("[id [%s]]\n", lexeme);
+        fprintf(output, "[id [%s]]\n", lexeme);
         lex();
     } else if (nextToken == INT_LIT) {
-        printf("[intLit [%s]]\n", lexeme);
+        fprintf(output, "[intLit [%s]]\n", lexeme);
         lex();
     } else if (nextToken == LEFT_PAREN) {
-        printf("[(]\n");
+        fprintf(output, "[(]\n");
         lex();
         expr();
         if (nextToken == RIGHT_PAREN) {
-            printf("[)]\n");
+            printf(output, "[)]\n");
             lex();
         } else {
-            printf("Error: missing closing parenthesis\n");
+            fprintf(output, "Error: missing closing parenthesis\n");
         }
     } else {
-        printf("Error: invalid factor\n");
+        fprintf(output, "Error: invalid factor\n");
     }
-    printf("]\n");
+    fprintf(output, "]\n");
 }
 
 // Executes the parser code
@@ -270,19 +271,26 @@ int main(int argc, char *argv[]) {
    //gets the inputed file
     input = fopen("input.txt", "r");
 
+    output = fopen("output.txt", "w");
+
+    if (output == NULL) {
+        printf("Error opening file!\n");
+        return 1; // Or exit the program in another way
+    }
+
     //checks if the file given is valid/not null
     if (input == NULL) {
-        printf("Error opening file\n");
+        fprintf(output, "Error opening file\n");
         return 1;
     }
 
     lex();
     expr();
     if (nextToken != EOF) {
-        printf("Error: unexpected token '%s'\n", lexeme);
+        fprintf(output, "Error: unexpected token '%s'\n", lexeme);
     }
 
+    fclose(output);
     fclose(input); // Close the input file
     return 0;
 }
-
